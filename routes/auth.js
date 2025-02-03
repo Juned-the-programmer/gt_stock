@@ -1,11 +1,11 @@
 import express from "express";
-import { registerUser, getUserList, getUserDetailByID, registerSoftware, updateSoftwareDetails, requestOTP, verifyOTP } from "../controllers/auth.js";
+import {registerSoftware, updateSoftwareDetails, requestOTP, verifyOTP, registerCompany, getComopanyList, getCompanyDetailByID } from "../controllers/auth.js";
 const router = express.Router();
 
 // Register
-router.post('/auth/register/v1', registerUser)
-router.get('/users/list/v1', getUserList)
-router.get('/user/:__id/v1', getUserDetailByID)
+router.post('/register/company/v1', registerCompany)
+router.get('/company/list/v1', getComopanyList)
+router.get('/company/:__id/v1', getCompanyDetailByID)
 
 // Create software
 router.post('/register/software/v1', registerSoftware)

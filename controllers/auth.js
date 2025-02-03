@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 let otps = {};
 
-export const registerUser = async (req, res) => {
+export const registerCompany = async (req, res) => {
     try {
         const sequelize = authsequelizeInstance();
        const {
@@ -34,7 +34,7 @@ export const registerUser = async (req, res) => {
         const __id = uuidv4();
 
         const query = `
-            INSERT INTO Users (
+            INSERT INTO Company (
                 __id, company_code, customer_type, company_name, email_id, city, 
                 state, owner_name, owner_mob, op_mob1, op_mob2, 
                 web_site, address, GST_NO, PAN_NO
@@ -75,10 +75,10 @@ export const registerUser = async (req, res) => {
     }
 };
 
-export const getUserList = async(req, res) => {
+export const getComopanyList = async(req, res) => {
     try {
         const sequelize = authsequelizeInstance()
-        const query = `SELECT * FROM USERS;`;
+        const query = `SELECT * FROM Company;`;
 
         const results = await sequelize.query(query, {
             type: sequelize.QueryTypes.SELECT
@@ -91,19 +91,19 @@ export const getUserList = async(req, res) => {
             data: results  
         })
     } catch (error) {
-        console.log("Error fetching User details: ", error);
+        console.log("Error fetching Company details: ", error);
         res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
     }
 }
 
-export const getUserDetailByID = async(req, res) => {
+export const getCompanyDetailByID = async(req, res) => {
     try {
         const {__id} = req.params;
         const sequelize = authsequelizeInstance()
 
         const query = `
         SELECT u.*, s.*
-        FROM USERS u
+        FROM Company u
         LEFT JOIN Software_detail s ON u.__id = s.user_id
         WHERE u.__id = :__id;
         `;
@@ -167,7 +167,7 @@ export const getUserDetailByID = async(req, res) => {
         });
 
     } catch(error) {
-        console.log("Error fetching User detail: ", error);
+        console.log("Error fetching Company detail: ", error);
         res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
     }
 }
