@@ -9,7 +9,7 @@ router.get('/stock/details/:gencode/v1', stockDetails);
 router.get('/stock/details/batch/manufacturing/:gencode/:shname/v1', stockDetailsWithBatchAndManufacturing);
 
 
-router.get('/order/details/v1', authenticateJWT, getOrderDetails);
+router.get('/order/details/v1', getOrderDetails);
 router.get('/order/details/totalcount/v1', getAllOrderTotalCount);
 router.get('/order/details/totalstock/v1', getTotalStockCount);
 router.get('/order/details/:ordNo/v1', getOrderDetailsByID);
