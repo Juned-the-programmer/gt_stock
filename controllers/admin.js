@@ -961,7 +961,9 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
             Shade.ShName,
             MfgStatus.MsName,
             PackFor.PfName,
-            OrdSubItem.OrdCN;
+            OrdSubItem.OrdCN
+        ORDER BY 
+            FirstOfOdate DESC;
         `;
 
         const results = await sequelize.query(query, {
