@@ -496,7 +496,8 @@ export const getOrderDetails = async (req, res) => {
         }
 
         orderQuery += `
-            GROUP BY OrdMast.OrdNo, OrdMast.Odate;
+            GROUP BY OrdMast.OrdNo, OrdMast.Odate
+            ORDER BY OrdMast.Odate DESC;
         `;
 
 
@@ -599,9 +600,6 @@ export const getOrderDetails = async (req, res) => {
         res.status(500).json({ status: 500, success: false, message: error.message });
     }
 };
-
-
-
 
 //get order by order id 
 export const getOrderDetailsByID = async (req, res) => {
@@ -983,8 +981,6 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
         res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
     }
 }
-
-
 
 
 
