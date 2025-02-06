@@ -33,6 +33,8 @@ export const getDataList = async (req, res) => {
         -- Declare variables
         DECLARE @v_GenCode NVARCHAR(50),
                 @v_ShCode NVARCHAR(50),
+                @v_BtCode NVARCHAR(50),
+                @v_MsCode NVARCHAR(50),
                 @v_DesignName NVARCHAR(100),
                 @v_CatName NVARCHAR(100),
                 @v_ShName NVARCHAR(100),
@@ -80,6 +82,8 @@ export const getDataList = async (req, res) => {
         CREATE TABLE #TempTable (
             GenCode NVARCHAR(50),
             ShCode NVARCHAR(50),
+            btCode NVARCHAR(50),
+            msCode NVARCHAR(50),
             DesignName NVARCHAR(100),
             CatName NVARCHAR(100),
             ShName NVARCHAR(100),
@@ -121,6 +125,8 @@ export const getDataList = async (req, res) => {
         SELECT
             SubDesign.GenCode,
             SubDesign.ShCode,
+            SubDesign.BtCode,
+            SubDesign.MsCode,
             DesignName.DesignName,
             CatName.CatName,
             Shade.ShName,
@@ -171,12 +177,12 @@ export const getDataList = async (req, res) => {
             SubDesign.Gtot <> 0
             AND DesignName.DesignName LIKE @searchCondition
         GROUP BY
-            SubDesign.GenCode, SubDesign.ShCode, DesignName.DesignName, CatName.CatName, Shade.ShName, SizeName.SizeName;
+            SubDesign.GenCode, SubDesign.ShCode, SubDesign.BtCode, SubDesign.MsCode, DesignName.DesignName, CatName.CatName, Shade.ShName, SizeName.SizeName;
         
         -- Open cursor
         OPEN cur;
         FETCH NEXT FROM cur INTO
-            @v_GenCode, @v_ShCode, @v_DesignName, @v_CatName, @v_ShName, @v_SizeName,
+            @v_GenCode, @v_ShCode, @v_BtCode, @v_MsCode, @v_DesignName, @v_CatName, @v_ShName, @v_SizeName,
             @v_BrandName, @v_SeriesName, @v_FGName, @v_DTName, @v_DSName, @v_PcsBox,
             @v_BtBoxWt, @v_SqFeet, @v_SqMtr, @v_DesignAct, @v_BPName,
             @v_G1, @v_G2, @v_G3, @v_G4, @v_G5, @v_Gtot,
@@ -189,9 +195,9 @@ export const getDataList = async (req, res) => {
         BEGIN
             -- Insert into temp table
             INSERT INTO #TempTable
-            (GenCode, ShCode, DesignName, CatName, ShName, SizeName, BrandName, SeriesName, FGName, DTName, DSName, PcsBox, BtBoxWt, SqFeet, SqMtr, DesignAct, BPName, G1, G2, G3, G4, G5, Gtot, OQ1, OQ2, OQ3, OQ4, OQ5, OQtot, AOQ1, AOQ2, AOQ3, AOQ4, AOQ5, AOQtot, SumOfG1)
+            (GenCode, ShCode, BtCode, MsCode, DesignName, CatName, ShName, SizeName, BrandName, SeriesName, FGName, DTName, DSName, PcsBox, BtBoxWt, SqFeet, SqMtr, DesignAct, BPName, G1, G2, G3, G4, G5, Gtot, OQ1, OQ2, OQ3, OQ4, OQ5, OQtot, AOQ1, AOQ2, AOQ3, AOQ4, AOQ5, AOQtot, SumOfG1)
             VALUES
-            (@v_GenCode, @v_ShCode, @v_DesignName, @v_CatName, @v_ShName, @v_SizeName,
+            (@v_GenCode, @v_ShCode, @v_BtCode, @v_MsCode, @v_DesignName, @v_CatName, @v_ShName, @v_SizeName,
              @v_BrandName, @v_SeriesName, @v_FGName, @v_DTName, @v_DSName, @v_PcsBox,
              @v_BtBoxWt, @v_SqFeet, @v_SqMtr, @v_DesignAct, @v_BPName,
              @v_G1, @v_G2, @v_G3, @v_G4, @v_G5, @v_Gtot,
@@ -199,7 +205,7 @@ export const getDataList = async (req, res) => {
              @v_AOQ1, @v_AOQ2, @v_AOQ3, @v_AOQ4, @v_AOQ5, @v_AOQtot, @v_SumOfG1);
         
             FETCH NEXT FROM cur INTO
-                @v_GenCode, @v_ShCode, @v_DesignName, @v_CatName, @v_ShName, @v_SizeName,
+                @v_GenCode, @v_ShCode, @v_BtCode, @v_MsCode, @v_DesignName, @v_CatName, @v_ShName, @v_SizeName,
                 @v_BrandName, @v_SeriesName, @v_FGName, @v_DTName, @v_DSName, @v_PcsBox,
                 @v_BtBoxWt, @v_SqFeet, @v_SqMtr, @v_DesignAct, @v_BPName,
                 @v_G1, @v_G2, @v_G3, @v_G4, @v_G5, @v_Gtot,
