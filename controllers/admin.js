@@ -728,51 +728,51 @@ export const getOrderDescriptionByID = async (req, res) => {
         const sequelize = getSequelizeInstance();
 
         const query = `
-            SELECT 
-    OrdSubItem.OrdNo, 
-    OrdSubItem.OrdCN, 
-    SubDesign.GenCode, 
-    PrdtName.PrdtName, 
-    BrandName.BrandName, 
-    SizeName.SizeName, 
-    CatName.CatName, 
-    DesignName.DesignName, 
-    PackFor.PfName, 
-    Shade.ShName, 
-    Batch.BtName, 
-    MfgStatus.MsName, 
-    SUM(OrdSubItem.G1) AS SumOfG1, 
-    SUM(OrdSubItem.G2) AS SumOfG2, 
-    SUM(OrdSubItem.G3) AS SumOfG3, 
-    SUM(OrdSubItem.G4) AS SumOfG4,
-	SUM(OrdSubItem.Gtot) AS SumOfGtot
-FROM 
-    OrdSubItem
-    INNER JOIN SubDesign ON OrdSubItem.GenSrNo = SubDesign.GenSrNo
-    INNER JOIN DesignName ON SubDesign.GenCode = DesignName.GenCode
-    INNER JOIN Shade ON SubDesign.ShCode = Shade.ShCode
-    INNER JOIN PackFor ON OrdSubItem.PfCode = PackFor.PfCode
-    INNER JOIN Batch ON SubDesign.BtCode = Batch.BtCode
-    INNER JOIN MfgStatus ON SubDesign.MsCode = MfgStatus.MsCode
-    INNER JOIN PrdtName ON DesignName.PrdtCode = PrdtName.PrdtCode
-    INNER JOIN BrandName ON DesignName.BrandCode = BrandName.BrandCode
-    INNER JOIN SizeName ON DesignName.SizeCode = SizeName.SizeCode
-    INNER JOIN CatName ON DesignName.CatCode = CatName.CatCode
-WHERE 
-    OrdSubItem.OrdNo = :ordNo
-GROUP BY 
-    OrdSubItem.OrdNo, 
-    SubDesign.GenCode, 
-    OrdSubItem.OrdCN,
-    PrdtName.PrdtName, 
-    BrandName.BrandName, 
-    SizeName.SizeName, 
-    CatName.CatName, 
-    DesignName.DesignName, 
-    PackFor.PfName, 
-    Shade.ShName, 
-    Batch.BtName, 
-    MfgStatus.MsName;
+            SELECT
+            OrdSubItem.OrdNo, 
+            OrdSubItem.OrdCN, 
+            SubDesign.GenCode, 
+            PrdtName.PrdtName, 
+            BrandName.BrandName, 
+            SizeName.SizeName, 
+            CatName.CatName, 
+            DesignName.DesignName, 
+            PackFor.PfName, 
+            Shade.ShName, 
+            Batch.BtName, 
+            MfgStatus.MsName, 
+            SUM(OrdSubItem.G1) AS SumOfG1, 
+            SUM(OrdSubItem.G2) AS SumOfG2, 
+            SUM(OrdSubItem.G3) AS SumOfG3, 
+            SUM(OrdSubItem.G4) AS SumOfG4,
+            SUM(OrdSubItem.Gtot) AS SumOfGtot
+        FROM 
+            OrdSubItem
+            INNER JOIN SubDesign ON OrdSubItem.GenSrNo = SubDesign.GenSrNo
+            INNER JOIN DesignName ON SubDesign.GenCode = DesignName.GenCode
+            INNER JOIN Shade ON SubDesign.ShCode = Shade.ShCode
+            INNER JOIN PackFor ON OrdSubItem.PfCode = PackFor.PfCode
+            INNER JOIN Batch ON SubDesign.BtCode = Batch.BtCode
+            INNER JOIN MfgStatus ON SubDesign.MsCode = MfgStatus.MsCode
+            INNER JOIN PrdtName ON DesignName.PrdtCode = PrdtName.PrdtCode
+            INNER JOIN BrandName ON DesignName.BrandCode = BrandName.BrandCode
+            INNER JOIN SizeName ON DesignName.SizeCode = SizeName.SizeCode
+            INNER JOIN CatName ON DesignName.CatCode = CatName.CatCode
+        WHERE 
+            OrdSubItem.OrdNo = :ordNo
+        GROUP BY 
+            OrdSubItem.OrdNo, 
+            SubDesign.GenCode, 
+            OrdSubItem.OrdCN,
+            PrdtName.PrdtName, 
+            BrandName.BrandName, 
+            SizeName.SizeName, 
+            CatName.CatName, 
+            DesignName.DesignName, 
+            PackFor.PfName, 
+            Shade.ShName, 
+            Batch.BtName, 
+            MfgStatus.MsName;
         `;
         const results = await sequelize.query(query, {
             replacements: { ordNo },
@@ -937,6 +937,12 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
             MIN(OrdMast.Pline) AS FirstOfPline,
             MIN(OrdMast.OStatus) AS FirstOfOStatus,
             MIN(SEName.SEName) AS FirstOfSEName,
+            SUM(CTotQty) AS TotalQty,
+            SUM(Cwt) AS TotalWeight,
+            SUM(RdTotQty) AS ReadyQty,
+            SUM(Rdwt) AS ReadyWeight,
+            SUM(NRdTotQty) AS NotReadyQty,
+            SUM(NRdwt) AS NotReadyWeight,
             Batch.BtName,
             Shade.ShName,
             MfgStatus.MsName,
