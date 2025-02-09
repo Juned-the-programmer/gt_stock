@@ -983,6 +983,31 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
             type: sequelize.QueryTypes.SELECT
         });
 
+        for (let order of results) {
+            const orderQuery = `
+            SELECT 
+                OrdSubItem.OrdNo, 
+                SubDesign.GenCode, 
+                OrdSubItem.Pfcode,
+                SUM(CASE WHEN OrdSubItem.OrdCN = 0 THEN 1 ELSE 0 END) AS ReadyCount,
+                SUM(CASE WHEN OrdSubItem.OrdCN = 1 THEN 1 ELSE 0 END) AS NotReadyCount
+            FROM OrdSubItem
+            INNER JOIN SubDesign ON OrdSubItem.GenSrNo = SubDesign.GenSrNo
+            WHERE OrdSubItem.OrdNo = :ordNo
+            GROUP BY OrdSubItem.OrdNo, SubDesign.GenCode, OrdSubItem.Pfcode;
+            `;
+      
+            // Execute the second query for each order
+            const orderDetails = await sequelize.query(orderQuery, {
+              replacements: { ordNo: order.OrdNo },
+              type: sequelize.QueryTypes.SELECT,
+            });
+
+            order.ReadyCount = orderDetails.reduce((sum, row) => sum + row.ReadyCount, 0);
+            order.NotReadyCount = orderDetails.reduce((sum, row) => sum + row.NotReadyCount, 0);
+            order.TotalCount = order.ReadyCount + order.NotReadyCount;
+        }
+
         res.status(200).json({ 
             status: 200, 
             success: true, 
