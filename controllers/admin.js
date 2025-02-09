@@ -732,6 +732,7 @@ export const getOrderDescriptionByID = async (req, res) => {
             OrdSubItem.OrdNo, 
             OrdSubItem.OrdCN, 
             SubDesign.GenCode, 
+            SubDesign.BtBoxWt,
             PrdtName.PrdtName, 
             BrandName.BrandName, 
             SizeName.SizeName, 
@@ -763,6 +764,7 @@ export const getOrderDescriptionByID = async (req, res) => {
         GROUP BY 
             OrdSubItem.OrdNo, 
             SubDesign.GenCode, 
+            SubDesign.BtBoxWt,
             OrdSubItem.OrdCN,
             PrdtName.PrdtName, 
             BrandName.BrandName, 
@@ -788,12 +790,14 @@ export const getOrderDescriptionByID = async (req, res) => {
                 SizeName: item.SizeName,
                 CatName: item.CatName,
                 records: [],
-                TotalQuntity: 0
+                TotalQuntity: 0,
+                TotalWeight: 0
             };
         }
         
         groupedData[key].records.push(item);
         groupedData[key].TotalQuntity += item.SumOfGtot;
+        groupedData[key].TotalWeight += item.BtBoxWt;
         });
         
 
