@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: './.env' });
 
-let sequelize; 
+// let sequelize; 
 let authsequelize;
 
 // export const dbConnection = async () => {
@@ -21,22 +21,22 @@ let authsequelize;
 //     }
 // };
 
-export const dbConnection = async () => {
-    if (!sequelize) {
-        sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
-            host: process.env.DB_HOST,
-            dialect: 'mssql'
-        });
+// export const dbConnection = async () => {
+//     if (!sequelize) {
+//         sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
+//             host: process.env.DB_HOST,
+//             dialect: 'mssql'
+//         });
 
-        try {
-            await sequelize.authenticate();
-            console.log('Database connected successfully.');
-        } catch (error) {
-            console.error('Unable to connect to the database:', error);
-        }
-    }
-    return sequelize;
-};
+//         // try {
+//         //     await sequelize.authenticate();
+//         //     console.log('Database connected successfully.');
+//         // } catch (error) {
+//         //     console.error('Unable to connect to the database:', error);
+//         // }
+//     }
+//     return sequelize;
+// };
 
 export const authDbConnection = async () => {
     if(!authsequelize) {
@@ -62,9 +62,9 @@ export const authsequelizeInstance = () => {
     return authsequelize;
 }
 
-export const getSequelizeInstance = () => {
-    if (!sequelize) {
-        throw new Error("Sequelize instance is not initialized. Call dbConnection() first.");
-    }
-    return sequelize;
-};
+// export const getSequelizeInstance = () => {
+//     if (!sequelize) {
+//         throw new Error("Sequelize instance is not initialized. Call dbConnection() first.");
+//     }
+//     return sequelize;
+// };

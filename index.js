@@ -4,13 +4,15 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import { authDbConnection, dbConnection } from "./db.js";
+import { authDbConnection } from "./db.js";
 
 // routes
 import adminRouter from "./routes/admin.js";
 import authRouter from "./routes/auth.js";
+import cleanupExpiredConnections from "./utils/cleanup.js";
 
 const app = express();
+cleanupExpiredConnections();
 dotEnv.config({ path: "./.env" });
 
 app.use(cors({
@@ -34,7 +36,7 @@ app.use(express.json({ limit: '10kb' }));
 (async () => {
     try {
         // Wait for the database to connect
-        await dbConnection();
+        // await dbConnection();
         await authDbConnection();
 
         // Define routes after DB is connected

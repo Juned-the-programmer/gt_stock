@@ -1,9 +1,8 @@
-import { getSequelizeInstance } from '../db.js';
 
 export const getDataList = async (req, res) => {
     try {
         const { search } = req.query;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         //     const query = `
         //     SELECT 
@@ -249,9 +248,7 @@ export const getDataList = async (req, res) => {
 export const getDetails = async (req, res) => {
     try {
         const { search } = req.query;
-        const sequelize = getSequelizeInstance();
-
-        
+        const sequelize = req.sequelize;
 
         const query = `
             SELECT BrandName.BrandName, CatName.CatName, GrName.GrName, DesignName.DesignName, DesignName.G1, DesignName.G2, DesignName.G3, DesignName.G4, DesignName.OQ1, DesignName.OQ2, DesignName.OQ3, DesignName.OQ4, DesignName.AOQ1, DesignName.AOQ2, DesignName.AOQ3, DesignName.AOQ4
@@ -272,7 +269,7 @@ export const getDetails = async (req, res) => {
 export const stockDetails = async (req, res) => {
     try {
         const { gencode } = req.params;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const query = `
            SELECT
@@ -369,7 +366,7 @@ ORDER BY
 export const stockDetailsWithBatchAndManufacturing = async (req, res) => {
     try {
         const { gencode, shname } = req.params;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const query = `
            SELECT 
@@ -438,7 +435,7 @@ ORDER BY
 // sename details like name total_order not_ready,half,ready
 export const seNameDetails = async (req, res) => {
     try {
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const query = `
             SELECT 
@@ -473,7 +470,7 @@ GROUP BY
 // get all order 
 export const getOrderDetails = async (req, res) => {
     try {
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
         const {search} = req.query;
 
         let orderQuery = `
@@ -611,7 +608,7 @@ export const getOrderDetails = async (req, res) => {
 export const getOrderDetailsByID = async (req, res) => {
     try {
         const { ordNo } = req.params;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const query = `
                     SELECT 
@@ -666,7 +663,7 @@ WHERE
 export const getTotalOrderCount_By_OrderID = async (req, res) => {
     try {
         const { ordNo } = req.params;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         // Query to count ready (OrdCN = 0) and not ready (OrdCN = 1) orders
         const countQuery = `
@@ -725,7 +722,7 @@ export const getTotalOrderCount_By_OrderID = async (req, res) => {
 export const getOrderDescriptionByID = async (req, res) => {
     try {
         const { ordNo } = req.params;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const query = `
             SELECT
@@ -810,7 +807,7 @@ export const getOrderDescriptionByID = async (req, res) => {
 // get total stock count   
 export const getTotalStockCount = async (req, res) => {
     try {
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const queries = {
             totalStock: `SELECT SUM(SubDesign.Gtot) AS SumOfGtot FROM SubDesign`,
@@ -844,7 +841,7 @@ export const getTotalStockCount = async (req, res) => {
 // get all order count 
 export const getAllOrderTotalCount = async (req, res) => {
     try {
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
 
         const query = `
             SELECT 
@@ -878,7 +875,7 @@ export const getAllOrderTotalCount = async (req, res) => {
 export const getOrderDetailsByGencode_Btcode_Shcode_MsCode = async(req, res) => {
     try{
         const {gencode , btcode, shcode, mscode} = req.params;
-        const sequelize = getSequelizeInstance();
+        const sequelize = req.sequelize;
         
         const query = `
         SELECT 
@@ -929,7 +926,7 @@ export const getOrderDetailsByGencode_Btcode_Shcode_MsCode = async(req, res) => 
 export const getOrderDetailsByGencode_pfname = async(req, res) => {
     try{
         const {gencode, pfname} = req.params;
-        const sequelize = getSequelizeInstance()
+        const sequelize = req.sequelize;
 
         const query = `
         SELECT 
@@ -987,6 +984,9 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
             type: sequelize.QueryTypes.SELECT
         });
 
+        const Ready = [];
+        const NotReady = [];
+
         for (let order of results) {
             const orderQuery = `
             SELECT 
@@ -1010,13 +1010,21 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
             order.ReadyCount = orderDetails.reduce((sum, row) => sum + row.ReadyCount, 0);
             order.NotReadyCount = orderDetails.reduce((sum, row) => sum + row.NotReadyCount, 0);
             order.TotalCount = order.ReadyCount + order.NotReadyCount;
+
+            if (order.OrdCN === 0) {
+                Ready.push(order);
+            } else if (order.OrdCN === 1) {
+                NotReady.push(order);
+            }
         }
 
         res.status(200).json({ 
             status: 200, 
             success: true, 
             count: results.length,
-            data: results  
+            data: {
+                Ready, NotReady
+            }  
         });
 
     } catch(error) {

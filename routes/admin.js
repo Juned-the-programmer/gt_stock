@@ -3,21 +3,21 @@ import { getAllOrderTotalCount, getDataList, getDetails, getOrderDescriptionByID
 import authenticateJWT from "../controllers/authorization.js";
 const router = express.Router();
 
-router.get('/data/list/v1', getDataList);
-router.get('/details/v1', getDetails); // use less
-router.get('/stock/details/:gencode/v1', stockDetails);
-router.get('/stock/details/batch/manufacturing/:gencode/:shname/v1', stockDetailsWithBatchAndManufacturing);
+router.get('/data/list/v1', authenticateJWT, getDataList);
+router.get('/details/v1', authenticateJWT, getDetails); // use less
+router.get('/stock/details/:gencode/v1',authenticateJWT, stockDetails);
+router.get('/stock/details/batch/manufacturing/:gencode/:shname/v1',authenticateJWT, stockDetailsWithBatchAndManufacturing);
 
 
-router.get('/order/details/v1', getOrderDetails);
-router.get('/order/details/totalcount/v1', getAllOrderTotalCount);
-router.get('/order/details/totalstock/v1', getTotalStockCount);
-router.get('/order/details/:ordNo/v1', getOrderDetailsByID);
-router.get('/order/details/totalorder/:ordNo/v1', getTotalOrderCount_By_OrderID);
-router.get('/order/details/description/:ordNo/v1', getOrderDescriptionByID);
-router.get('/data/details/sename/v1', seNameDetails);
-router.get('/order/details/:gencode/:btcode/:shcode/:mscode/v1', getOrderDetailsByGencode_Btcode_Shcode_MsCode);
-router.get('/order/details/:gencode/:pfname/v1', getOrderDetailsByGencode_pfname);
+router.get('/order/details/v1',authenticateJWT, getOrderDetails);
+router.get('/order/details/totalcount/v1',authenticateJWT, getAllOrderTotalCount);
+router.get('/order/details/totalstock/v1',authenticateJWT, getTotalStockCount);
+router.get('/order/details/:ordNo/v1',authenticateJWT, getOrderDetailsByID);
+router.get('/order/details/totalorder/:ordNo/v1',authenticateJWT, getTotalOrderCount_By_OrderID);
+router.get('/order/details/description/:ordNo/v1',authenticateJWT, getOrderDescriptionByID);
+router.get('/data/details/sename/v1',authenticateJWT, seNameDetails);
+router.get('/order/details/:gencode/:btcode/:shcode/:mscode/v1',authenticateJWT, getOrderDetailsByGencode_Btcode_Shcode_MsCode);
+router.get('/order/details/:gencode/:pfname/v1',authenticateJWT, getOrderDetailsByGencode_pfname);
 // router.get('/data/list/v2', getDataListV2); // old one
 // router.get('/stock/list/data/v1', stockListData);
 // router.get('/product/list/description/:gencode/:shcode/v1', productDescriptionData);
