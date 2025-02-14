@@ -306,6 +306,17 @@ export const registerSoftware = async(req, res) => {
                     replacements: application_values,
                     type: sequelize.QueryTypes.INSERT,
                 })
+
+                const createDbQuery = `
+                    IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = ?) 
+                    BEGIN
+                        EXEC('CREATE DATABASE ' + ?);
+                    END
+                    `;
+                await sequelize.query(createDbQuery, {
+                    replacements: [db_name, db_name],
+                    type: sequelize.QueryTypes.RAW,  // Execute raw query (CREATE DATABASE)
+                });
             }
 
             res.status(201).json({ 
