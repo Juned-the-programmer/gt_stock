@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllOrderTotalCount, getDataList, getDetails, getOrderDescriptionByID, getOrderDetails, getOrderDetailsByID, getTotalOrderCount_By_OrderID, getTotalStockCount, seNameDetails, stockDetails, stockDetailsWithBatchAndManufacturing, getOrderDetailsByGencode_Btcode_Shcode_MsCode, getOrderDetailsByGencode_pfname } from "../controllers/admin.js";
+import { getAllOrderTotalCount, getDataList, getDetails, getOrderDescriptionByID, getOrderDetails, getOrderDetailsByID, getTotalOrderCount_By_OrderID, getTotalStockCount, seNameDetails, stockDetails, stockDetailsWithBatchAndManufacturing, getOrderDetailsByGencode_Btcode_Shcode_MsCode, getOrderDetailsByGencode_pfname, getOrderDetailsByGencode_pfnameList } from "../controllers/admin.js";
 import authenticateJWT from "../controllers/authorization.js";
 const router = express.Router();
 
@@ -18,6 +18,7 @@ router.get('/order/details/description/:ordNo/v1',authenticateJWT, getOrderDescr
 router.get('/data/details/sename/v1',authenticateJWT, seNameDetails);
 router.get('/order/details/:gencode/:btcode/:shcode/:mscode/v1',authenticateJWT, getOrderDetailsByGencode_Btcode_Shcode_MsCode);
 router.get('/order/details/:gencode/:pfname/v1',authenticateJWT, getOrderDetailsByGencode_pfname);
+router.get('/order/details/list/:gencode/:pfname/v1',authenticateJWT, getOrderDetailsByGencode_pfnameList);
 // router.get('/data/list/v2', getDataListV2); // old one
 // router.get('/stock/list/data/v1', stockListData);
 // router.get('/product/list/description/:gencode/:shcode/v1', productDescriptionData);

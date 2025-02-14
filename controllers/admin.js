@@ -1033,7 +1033,103 @@ export const getOrderDetailsByGencode_pfname = async(req, res) => {
     }
 }
 
+export const getOrderDetailsByGencode_pfnameList = async(req, res) => {
+    try{
+        const {gencode, pfname} = req.params;
+        const sequelize = req.sequelize;
 
+        const query = `
+        SELECT 
+            OrdMast.OrdNo,
+            MIN(OrdMast.Odate) AS FirstOfOdate,
+            MIN(OrdMast.OCName) AS FirstOfOCName,
+            MIN(OrdMast.OCity) AS FirstOfOCity,
+            MIN(OrdMast.PlaceState) AS FirstOfPlaceState,
+            MIN(OrdMast.Pline) AS FirstOfPline,
+            MIN(OrdMast.OStatus) AS FirstOfOStatus,
+            MIN(SEName.SEName) AS FirstOfSEName,
+            SUM(CTotQty) AS TotalQty,
+            SUM(Cwt) AS TotalWeight,
+            SUM(RdTotQty) AS ReadyQty,
+            SUM(Rdwt) AS ReadyWeight,
+            SUM(NRdTotQty) AS NotReadyQty,
+            SUM(NRdwt) AS NotReadyWeight,
+            Batch.BtName,
+            Shade.ShName,
+            MfgStatus.MsName,
+            PackFor.PfName,
+            SUM(OrdSubItem.G1) AS SumOfG1,
+            SUM(OrdSubItem.G2) AS SumOfG2,
+            SUM(OrdSubItem.G3) AS SumOfG3,
+            SUM(OrdSubItem.G4) AS SumOfG4,
+            SUM(OrdSubItem.Gtot) AS SumOfGtot,
+            OrdSubItem.OrdCN
+        FROM 
+            SEName 
+            INNER JOIN CustName ON SEName.SECode = CustName.SECode
+            INNER JOIN OrdMast ON CustName.CCode = OrdMast.CCode
+            INNER JOIN OrdSubItem ON OrdMast.OrdNo = OrdSubItem.OrdNo
+            INNER JOIN SubDesign ON OrdSubItem.GenSrNo = SubDesign.GenSrNo
+            INNER JOIN DesignName ON SubDesign.GenCode = DesignName.GenCode
+            INNER JOIN Batch ON SubDesign.BtCode = Batch.BtCode
+            INNER JOIN Shade ON SubDesign.ShCode = Shade.ShCode
+            INNER JOIN MfgStatus ON SubDesign.MsCode = MfgStatus.MsCode
+            INNER JOIN PackFor ON OrdSubItem.PfCode = PackFor.PfCode
+        WHERE 
+            SubDesign.GENCODE = :gencode 
+            AND packfor.pfname = :pfname
+        GROUP BY 
+            OrdMast.OrdNo,
+            Batch.BtName,
+            Shade.ShName,
+            MfgStatus.MsName,
+            PackFor.PfName,
+            OrdSubItem.OrdCN
+        ORDER BY 
+            FirstOfOdate DESC;
+        `;
+
+        const results = await sequelize.query(query, {
+            replacements: { gencode, pfname},
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        for (let order of results) {
+            const orderQuery = `
+            SELECT 
+                OrdSubItem.OrdNo, 
+                SubDesign.GenCode, 
+                OrdSubItem.Pfcode,
+                SUM(CASE WHEN OrdSubItem.OrdCN = 0 THEN 1 ELSE 0 END) AS ReadyCount,
+                SUM(CASE WHEN OrdSubItem.OrdCN = 1 THEN 1 ELSE 0 END) AS NotReadyCount
+            FROM OrdSubItem
+            INNER JOIN SubDesign ON OrdSubItem.GenSrNo = SubDesign.GenSrNo
+            WHERE OrdSubItem.OrdNo = :ordNo
+            GROUP BY OrdSubItem.OrdNo, SubDesign.GenCode, OrdSubItem.Pfcode;
+            `;
+      
+            const orderDetails = await sequelize.query(orderQuery, {
+              replacements: { ordNo: order.OrdNo },
+              type: sequelize.QueryTypes.SELECT,
+            });
+
+            order.ReadyCount = orderDetails.reduce((sum, row) => sum + row.ReadyCount, 0);
+            order.NotReadyCount = orderDetails.reduce((sum, row) => sum + row.NotReadyCount, 0);
+            order.TotalCount = order.ReadyCount + order.NotReadyCount;
+        }
+
+        res.status(200).json({ 
+            status: 200, 
+            success: true, 
+            count: results.length,
+            data: results
+        });
+
+    } catch(error) {
+        console.log("Error fetching order details: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+    }
+}
 
 // old one
 // export const getDataListV2 = async (req, res) => {

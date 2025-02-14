@@ -236,6 +236,11 @@ export const registerSoftware = async(req, res) => {
             db_username,
             db_password,
             store,
+            store_server_name,
+            store_data_path,
+            store_db_name,
+            store_db_username,
+            store_db_password,
             data_password,
             running_status,
             temp_code,
@@ -282,7 +287,7 @@ export const registerSoftware = async(req, res) => {
 
             const [result] = await sequelize.query(query, {
                 replacements: values,
-                type: sequelize.QueryTypes.INSERT,  // Ensure it's an insert query
+                type: sequelize.QueryTypes.INSERT,
             });
 
             // Add Software Instance
@@ -315,8 +320,30 @@ export const registerSoftware = async(req, res) => {
                     `;
                 await sequelize.query(createDbQuery, {
                     replacements: [db_name, db_name],
-                    type: sequelize.QueryTypes.RAW,  // Execute raw query (CREATE DATABASE)
+                    type: sequelize.QueryTypes.RAW,
                 });
+            } 
+            // Add Store Instance
+            if(store === true){
+                const uniqueString = `${software_code}-${store_server_name}-${store_data_path}-${store_db_name}-${store_db_username}-${result[0].__id}`.toUpperCase();
+                const uniqueCode = crypto.createHash('sha256').update(uniqueString).digest('hex').substring(0, 6);
+                const __id = uuidv4();
+                const store_query=`
+                INSERT INTO store_instance(
+                __id, software_code, db_server_name,  data_path, db_name, db_username, db_password, software_id, code)
+                VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
+                );
+                `;
+
+                const store_values = [
+                    __id, software_code, store_server_name, store_data_path, store_db_name, store_db_username, store_db_password, result[0].__id, uniqueCode
+                ]
+
+                const store_register = await sequelize.query(store_query, {
+                    replacements: store_values,
+                    type: sequelize.QueryTypes.INSERT,
+                })
             }
 
             res.status(201).json({ 
