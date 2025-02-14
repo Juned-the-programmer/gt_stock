@@ -67,13 +67,13 @@ export const registerCompany = async (req, res) => {
             data: result[0] });
 
        } catch (error) {
-        console.log("Error fetching order details: ", error);
+        console.log("Error Registering Company: ", error);
         res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
        }
        
 
     } catch (error) {
-        console.error("Error registering user:", error);
+        console.error("Error Registering Company:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
@@ -230,6 +230,11 @@ export const registerSoftware = async(req, res) => {
             rate_in,
             y_rate,
             application,
+            db_server_name,
+            data_path,
+            db_name,
+            db_username,
+            db_password,
             store,
             data_password,
             running_status,
@@ -280,10 +285,34 @@ export const registerSoftware = async(req, res) => {
                 type: sequelize.QueryTypes.INSERT,  // Ensure it's an insert query
             });
 
+            // Add Software Instance
+            if(application === true){
+                const uniqueString = `${software_code}-${db_server_name}-${data_path}-${db_name}-${db_username}-${result[0].__id}`.toUpperCase();
+                const uniqueCode = crypto.createHash('sha256').update(uniqueString).digest('hex').substring(0, 6);
+                const __id = uuidv4();
+                const application_query=`
+                INSERT INTO Software_instance(
+                __id, software_code, db_server_name,  data_path, db_name, db_username, db_password, software_id, code)
+                VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
+                );
+                `;
+
+                const application_values = [
+                    __id, software_code, db_server_name, data_path, db_name, db_username, db_password, result[0].__id, uniqueCode
+                ]
+
+                const application_register = await sequelize.query(application_query, {
+                    replacements: application_values,
+                    type: sequelize.QueryTypes.INSERT,
+                })
+            }
+
             res.status(201).json({ 
                 status: 201,
                 success: true, 
-                data: result[0] });
+                data: result[0] 
+            });
 
         } catch (error) {
             console.log("Error Registering Software: ", error);
@@ -386,6 +415,64 @@ export const updateSoftwareDetails = async(req, res) => {
 
 }
 
+export const addUserRole = async(req, res) => {
+    try{
+        const sequelize = authsequelizeInstance();
+        const {
+            role,
+            reference_id,
+            firmname,
+            person_name,
+            city,
+            state,
+            type,
+            looking_for,
+            mob_1,
+            password_1,
+            mob_2,
+            password_2,
+            mob_3,
+            password_3,
+            mob_4,
+            password_4,
+            active_status,
+            software_id
+        } = req.body;
+        try{
+            const __id = uuidv4();
+            const first_login = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const query=`INSERT INTO users(
+            __id, Role, Reference_id, FirmName, Person_name, city, state, type, looking_for, Mob_1, password_1, Mob_2, password_2, Mob_3, password_3,
+            Mob_4, password_4, active_status, first_login, otp_verified, software_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+            `;
+
+            const values = [
+                __id, role, reference_id, firmname, person_name, city, state, type, looking_for, mob_1, password_1, mob_2, password_2, mob_3, password_3,
+                mob_4, password_4, active_status, first_login, 0, software_id
+            ] 
+
+            const result = await sequelize.query(query, {
+                replacements: values,
+                type: sequelize.QueryTypes.INSERT,
+            })
+
+            res.status(201).json({ 
+                status: 201,
+                success: true,
+                data: "User Registerd Successfully"
+            });
+
+        } catch (error) {
+            console.log("Error Adding USER role: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+        }
+    } catch(error) {
+        console.log("Error Adding USER role: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+    }
+}
+
 export const requestOTP = async(req, res) => {
     const {phone_no} = req.body;
 
@@ -437,70 +524,6 @@ export const verifyOTP = async(req, res) => {
     })
 }
 
-export const registerApplication = async(req, res) => {
-    try {
-        const sequelize = authsequelizeInstance();
-        const {
-            software_code,
-            server_name,
-            data_path,
-            db_name,
-            username,
-            password,
-            software_id
-        } = req.body;
-
-        try {
-            const __id = uuidv4();
-
-            const uniqueString = `${software_code}-${server_name}-${data_path}-${db_name}-${username}-${software_id}`;
-            const uniqueCode = crypto.createHash('sha256').update(uniqueString).digest('hex').substring(0, 6);  // Take first 10 chars as code
-
-            const createDbQuery = `
-            IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = ?) 
-            BEGIN
-                EXEC('CREATE DATABASE ' + ?);
-            END
-            `;
-
-            await sequelize.query(createDbQuery, {
-                replacements: [db_name, db_name],
-                type: sequelize.QueryTypes.RAW,  // Execute raw query (CREATE DATABASE)
-            });
-
-
-            const query = `
-            INSERT INTO software_instance (
-            __id, software_code, server_name, data_path, db_name, username, password, software_id, code
-            ) 
-            OUTPUT INSERTED.__id, INSERTED.software_code, INSERTED.server_name, INSERTED.data_path, INSERTED.db_name, INSERTED.username, INSERTED.password, INSERTED.software_id, INSERTED.code
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
-
-            const values = [
-                __id, software_code, server_name, data_path, db_name, username, password, software_id, uniqueCode
-            ]
-
-            const [result] = await sequelize.query(query, {
-                replacements: values,
-                type: sequelize.QueryTypes.INSERT,  // Ensure it's an insert query
-            });
-
-            res.status(201).json({ 
-                status: 201,
-                success: true,
-                data: result[0] });
-
-        } catch (error) {
-            console.error("Error registering Application:", error);
-            res.status(500).json({ message: "Internal server error" });
-        }
-    } catch (error) {
-        console.error("Error registering Application:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-}
-
 export const applicationLogin = async(req, res) => {
     try {
         const authsequelize = authsequelizeInstance();
@@ -509,62 +532,77 @@ export const applicationLogin = async(req, res) => {
         
         const query = `
         SELECT 
-            c.company_code,
-            c.owner_mob,
-            c.op_mob1,
-            c.op_mob2,
-            si.__id,
-            si.username,
-            si.password,
-            si.db_name
+            C.company_code,
+            SD.__id AS software_id,
+            SI.db_name,
+            SI.db_server_name,
+            SI.db_username,
+            SI.db_password,
+            U.Role,
+            U.Mob_1,
+            U.password_1,
+            U.Mob_2,
+            U.password_2,
+            U.Mob_3,
+            U.password_3,
+            U.Mob_4,
+            U.password_4,
+            U.active_status,
+            U.otp_verified
         FROM 
-            Company c
+            company C
         JOIN 
-            Software_detail sd ON c.__id = sd.company_id
+            software_detail SD ON C.__id = SD.company_id
+        JOIN
+            software_instance SI ON SD.__id = SI.software_id
         JOIN 
-            Software_instance si ON sd.__id = si.software_id
+            users U ON SD.__id = U.software_id
+        WHERE 
+            C.company_code = :company_code;
         `;
 
         const results = await authsequelize.query(query, {
+            replacements: {company_code},
             type: authsequelize.QueryTypes.SELECT
         })
-
         if(results.length > 0){
-            const result = results[0];
-
-            if(result.company_code === company_code &&
-                result.owner_mob === mobile_no || result.op_mob1 === mobile_no || result .op_mob2 === mobile_no &&
-                result.password === password
-            ) {
-                const token = jwt.sign({company_code, mobile_no, password}, JWT_SECRET, {expiresIn: '1h'});
-                if (!sequelize) {
-                    sequelize = new Sequelize(result.db_name, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
-                        host: process.env.DB_HOST,
-                        dialect: 'mssql'
-                    });
-            
-                    try {
-                        await sequelize.authenticate();
-                        console.log('Database connected successfully.');
-                    } catch (error) {
-                        console.error('Unable to connect to the database:', error);
+            for(let user of results) {
+                console.log(user);
+                if(user.company_code === company_code &&
+                        (user.Mob_1 === mobile_no && user.password_1 === password) ||
+                        (user.Mob_2 === mobile_no && user.password_2 === password) ||
+                        (user.Mob_3 === mobile_no && user.password_3 === password) ||
+                        (user.Mob_4 === mobile_no && user.password_4 === password)
+                ) {
+                    const token = jwt.sign({company_code, mobile_no, password}, JWT_SECRET, {expiresIn: '1h'});
+                    if (!sequelize) {
+                        sequelize = new Sequelize(user.db_name, user.db_username, user.db_password, {
+                            host: user.db_server_name,
+                            dialect: 'mssql'
+                        });
+                
+                        try {
+                            await sequelize.authenticate();
+                            console.log('Database connected successfully.');
+                        } catch (error) {
+                            console.error('Unable to connect to the database:', error);
+                        }
                     }
-                }
-                userConnections.set(token, {sequelize: sequelize, lastUsed: Date.now()});
-                return res.status(200).json({
-                    status: 200,
-                    success: true,
-                    user_id: result.__id,
-                    role: "admin",
-                    data: token
-                })
-            } else {
-                res.status(400).json({
-                    status: 400,
-                    success: false,
-                    message: 'Invalid credentials or company code'
-                });
+                    userConnections.set(token, {sequelize: sequelize, lastUsed: Date.now()});
+                    return res.status(200).json({
+                        status: 200,
+                        success: true,
+                        user_id: user.software_id,
+                        role: user.Role,
+                        data: token
+                    })
+                } 
             }
+            res.status(400).json({
+                status: 400,
+                success: false,
+                message: 'Invalid credentials or company code'
+            });
         } else {
             res.status(404).json({
                 status: 404,
