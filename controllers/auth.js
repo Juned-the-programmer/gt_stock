@@ -640,7 +640,7 @@ export const updateUserDetail = async(req, res) => {
                 password_3 = :password_3,
                 Mob_4 = :mob_4,
                 password_4 = :password_4,
-                active_statue = :active_statue
+                active_status = :active_status
             WHERE
             __id = :__id
             `;
@@ -788,7 +788,6 @@ export const applicationLogin = async(req, res) => {
         })
         if(results.length > 0){
             for(let user of results) {
-                console.log(user);
                 if(user.company_code === company_code &&
                         (user.Mob_1 === mobile_no && user.password_1 === password) ||
                         (user.Mob_2 === mobile_no && user.password_2 === password) ||
