@@ -363,6 +363,56 @@ export const registerSoftware = async(req, res) => {
     }
 }
 
+export const getSoftwareDetailById = async(req, res) => {
+    try {
+        const {__id} = req.params;
+        console.log(__id);
+        const sequelize = authsequelizeInstance()
+        const query=`
+        SELECT SD.__id, SD.software_code, SD.software_type, SD.register_status, SD.start_date, SD.end_date, SD.rate, SD.rate_in, SD.y_rate, 
+        SD.application, SD.store, sd.data_password, SD.running_status, SD.temp_code, SD.software_open_today, SD.company_id, C.company_name,
+        SI.__id AS software_instance_id, 
+        SI.software_code AS software_instance_software_code, 
+        SI.db_server_name AS software_instance_server_name, 
+        SI.data_path AS sofwtare_instatnce_data_path, 
+        SI.db_name AS sofwtare_instance_db_name, 
+        SI.db_username AS sofwtare_instance_db_username, 
+        SI.db_password AS software_instance_db_password, 
+        SI.code AS software_instance_code,
+        STI.__ID AS store_instance_id, 
+        STI.software_code AS store_instance_software_code, 
+        STI.db_server_name AS store_instance_server_name, 
+        STI.data_path AS store_instance_data_path, 
+        STI.db_name AS store_instance_db_name, 
+        STI.db_username AS store_instance_db_usernam , 
+        STI.db_password AS store_instance_db_password, 
+        STI.code AS store_instance_code 
+        from Software_detail SD
+        LEFT JOIN software_instance SI ON SI.software_id = SD.__id
+        LEFT JOIN store_instance STI ON STI.software_id = SD.__id
+        LEFT JOIN Company C ON C.__id = SD.company_id
+        WHERE 
+        SD.__id = :__id;
+        `;
+
+        const results = await sequelize.query(query, {
+            replacements: {__id},
+            type: sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ 
+            status: 200, 
+            success: true, 
+            count: results.length,
+            data: results
+        });
+
+    } catch(error) {
+        console.log("Error Retreiving Software Details: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+    }
+}
+
 export const updateSoftwareDetails = async(req, res) => {
     try{
         const {__id} = req.params;
@@ -507,6 +557,139 @@ export const addUserRole = async(req, res) => {
         }
     } catch(error) {
         console.log("Error Adding USER role: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+    }
+}
+
+export const getListUsersBysoftwareId = async(req, res) => {
+    try {
+        const {__id} = req.params;
+        const sequelize = authsequelizeInstance();
+        const query = 
+        `select 
+            U.__id, U.Role, U.Reference_id, U.FirmName, U.Person_name, U.city, U.state, 
+            U.type, U.looking_for, 
+            U.Mob_1, U.password_1, 
+            U.Mob_2, U.password_2, 
+            U.Mob_3, U.password_3,
+            U.Mob_4, U.password_4, 
+            U.active_status, U.first_login, U.otp_verified
+        from 
+            users U
+        WHERE
+            software_id = :__id;`;
+
+        const results = await sequelize.query(query, {
+            replacements: {__id},
+            type: sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ 
+            status: 200, 
+            success: true, 
+            count: results.length,
+            data: results
+        });
+
+    } catch (error) {
+        console.log("Error Retreving USER role: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+    }
+}
+
+export const updateUserDetail = async(req, res) => {
+    try {
+        const sequelize = authsequelizeInstance();
+        const {__id} = req.params;
+        const {
+            role,
+            reference_id,
+            firmname,
+            person_name,
+            city,
+            state,
+            type,
+            looking_for,
+            mob_1,
+            password_1,
+            mob_2,
+            password_2,
+            mob_3,
+            password_3,
+            mob_4,
+            password_4,
+            active_status
+        } = req.body;
+        try {
+            const query = `
+            UPDATE users 
+            SET
+                Role = :role,
+                Reference_id = :reference_id,
+                FirmName = :firmname,
+                Person_Name = :person_name,
+                city = :city,
+                state = :state,
+                type = :type,
+                looking_for = :looking_for,
+                Mob_1 = :mob_1,
+                password_1 = :password_1,
+                Mob_2 = :mob_2,
+                password_2 = :password_2,
+                Mob_3 = :mob_3,
+                password_3 = :password_3,
+                Mob_4 = :mob_4,
+                password_4 = :password_4,
+                active_statue = :active_statue
+            WHERE
+            __id = :__id
+            `;
+
+            const [result] = await sequelize.query(query, {
+                replacements: {
+                    role,
+                    reference_id,
+                    firmname,
+                    person_name,
+                    city,
+                    state,
+                    type,
+                    looking_for,
+                    mob_1,
+                    password_1,
+                    mob_2,
+                    password_2,
+                    mob_3,
+                    password_3,
+                    mob_4,
+                    password_4,
+                    active_status,
+                    __id
+                },
+                type: sequelize.QueryTypes.UPDATE
+            });
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    status: 404,
+                    success: false,
+                    message: "Software details not found or no changes made"
+                });
+            }
+    
+            // If update was successful, send a success response
+            res.status(200).json({
+                status: 200,
+                success: true,
+                message: "User details updated successfully"
+            });
+
+        } catch(error) {
+            console.log("Error updating USER role: ", error);
+            res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+        }
+    } catch(error) {
+        console.log("Error updating USER role: ", error);
         res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
     }
 }

@@ -1,5 +1,5 @@
 import express from "express";
-import {registerSoftware, updateSoftwareDetails, requestOTP, verifyOTP, registerCompany, getComopanyList, getCompanyDetailByID, applicationLogin, addUserRole } from "../controllers/auth.js";
+import {registerSoftware, updateSoftwareDetails, requestOTP, verifyOTP, registerCompany, getComopanyList, getCompanyDetailByID, applicationLogin, addUserRole, getSoftwareDetailById, getListUsersBysoftwareId, updateUserDetail } from "../controllers/auth.js";
 const router = express.Router();
 
 // Register
@@ -9,6 +9,7 @@ router.get('/company/:__id/v1', getCompanyDetailByID)
 
 // Create software
 router.post('/register/software/v1', registerSoftware)
+router.get('/software/:__id/v1', getSoftwareDetailById)
 router.put('/register/software/:__id/v1', updateSoftwareDetails)
 
 // OTP login
@@ -20,4 +21,7 @@ router.post('/auth/app/login/v1', applicationLogin)
 
 // Create a USER
 router.post('/auth/user/role/v1', addUserRole)
+router.get('/auth/users/list/:__id/v1', getListUsersBysoftwareId)
+router.put('/auth/user/:__id/v1', updateUserDetail)
+
 export default router;
