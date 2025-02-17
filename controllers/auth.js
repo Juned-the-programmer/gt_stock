@@ -597,6 +597,42 @@ export const getListUsersBysoftwareId = async(req, res) => {
     }
 }
 
+export const getUserDetailById = async(req, res) => {
+    try {
+        const {__id} = req.params;
+        const sequelize = authsequelizeInstance();
+        const query = 
+        `select 
+            U.__id, U.Role, U.Reference_id, U.FirmName, U.Person_name, U.city, U.state, 
+            U.type, U.looking_for, 
+            U.Mob_1, U.password_1, 
+            U.Mob_2, U.password_2, 
+            U.Mob_3, U.password_3,
+            U.Mob_4, U.password_4, 
+            U.active_status, U.first_login, U.otp_verified
+        from 
+            users U
+        WHERE
+            __id = :__id;`;
+        
+        const results = await sequelize.query(query, {
+            replacements: {__id},
+            type: sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ 
+            status: 200, 
+            success: true, 
+            count: results.length,
+            data: results
+        });
+    
+    } catch(error) {
+        console.log("Error Retreving USER role: ", error);
+        res.status(500).json({status: 500, success: false, message: "Internal Server Error"})
+    }
+}
+
 export const updateUserDetail = async(req, res) => {
     try {
         const sequelize = authsequelizeInstance();
@@ -788,7 +824,7 @@ export const applicationLogin = async(req, res) => {
         })
         if(results.length > 0){
             for(let user of results) {
-                if(user.company_code === company_code &&
+                if(user.company_code === company_code && user.active_status === true &&
                         (user.Mob_1 === mobile_no && user.password_1 === password) ||
                         (user.Mob_2 === mobile_no && user.password_2 === password) ||
                         (user.Mob_3 === mobile_no && user.password_3 === password) ||
@@ -835,3 +871,33 @@ export const applicationLogin = async(req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const applicationLogout = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({
+                status: 401,
+                success: false,
+                message: 'Unauthorized: No token provided'
+            });
+        }
+        
+        // Remove the connection associated with this token
+        if (userConnections.has(token)) {
+            const connection = userConnections.get(token);
+            await connection.sequelize.close(); // Close the database connection
+            userConnections.delete(token);
+        }
+        
+        res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Logout successful'
+        });
+    } catch (error) {
+        console.error('Error Logging Out:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
