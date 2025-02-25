@@ -830,7 +830,7 @@ export const applicationLogin = async(req, res) => {
                         (user.Mob_3 === mobile_no && user.password_3 === password) ||
                         (user.Mob_4 === mobile_no && user.password_4 === password)
                 ) {
-                    const token = jwt.sign({company_code, mobile_no, password}, JWT_SECRET, {expiresIn: '1h'});
+                    const token = jwt.sign({company_code, mobile_no, password}, JWT_SECRET, {expiresIn: '180d'});
                     if (!sequelize) {
                         sequelize = new Sequelize(user.db_name, user.db_username, user.db_password, {
                             host: user.db_server_name,
